@@ -8,3 +8,10 @@ def order_text(cart):
         total += count * price[item]
     msg += f'\n Итого {total} рублей'
     return msg
+
+def order_details(cart, mobile, adress, payment):
+    msg = order_text(cart)
+    msg += f'\n Номер телефона: {mobile} \n'
+    msg += f'\n Адрес: {adress} \n'
+    msg += f'\n Способ оплаты: {payment}'
+    return msg

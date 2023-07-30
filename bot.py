@@ -10,7 +10,7 @@ from utils import *
 import warnings
 warnings.filterwarnings("ignore")
 
-
+order_id = '-918073133'
 API_TOKEN = '6094466827:AAFDEgnPoqCJiCTheNJgraAWLdzaJWyxI3Y'
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -22,12 +22,24 @@ commands = [
 bot.set_my_commands(commands)
 
 cart = {}
+mobile = {}
+adress = {}
+payment = {}
 
 @bot.message_handler(commands=['start'])
 def start_msg(message):
     bot.send_message(
         message.chat.id, 
         text='Добро пожаловть в НАЗВАНИЕ_РЕСТОРАНА')
+    
+
+@bot.message_handler(func=lambda msg: msg.text is not None and msg.text[0] != '/')
+def text_msg(message):
+    print(message.chat.id)
+    bot.send_message(
+        message.chat.id, 
+        text=f'Текст не поддерживается, пользуйтесь кнопками.'
+        )
 
 
 @bot.message_handler(commands=['menu'])
@@ -39,7 +51,6 @@ def menu(message):
     ]
     
     keyboard.add(*keys)
-
     bot.send_message(
         message.chat.id, 
         text='Выберите раздел', 
@@ -138,14 +149,61 @@ def callback_worker(call):
             text=f'Блюдо {call2name[call.data[4:]]} добавлено в корзину'
         )
 
-    
-@bot.message_handler(content_types=['text'])
-def process_name(message):
-    bot.send_message(
-        message.chat.id, 
-        text=f'Текст не поддерживается, пользуйтесь кнопками.'
+    elif call.data == 'buy':
+        msg = bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.id, 
+            text='Введите ваш адрес'
         )
+        bot.register_next_step_handler(msg, dest)
+
+    elif call.data[:4] == 'pay_':
+        if call.data[4:] == 'cash':
+            payment[name] = 'Наличные'
+        else:
+            payment[name] = 'Картой'
+        
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.id, 
+            text='Спасибо, Ваш заказ принят в обработку'
+        )
+        
+        bot.send_message(
+            chat_id=order_id,
+            text=order_details(cart[name], mobile[name], adress[name], payment[name])
+        )
+        
+
+def dest(message):
+    name = message.from_user.username
+    adress[name] = message.text
+
+    msg = bot.send_message(
+            chat_id=message.chat.id,
+            #message_id=message.id, 
+            text='Введите ваш телефон'
+        )
+    bot.register_next_step_handler(msg, tele)
+
+
+def tele(message):
+    name = message.from_user.username
+    mobile[name] = message.text
+
+    keyboard = types.InlineKeyboardMarkup()
+    keys = [
+        types.InlineKeyboardButton(text='Наличные', callback_data='pay_cash'),
+        types.InlineKeyboardButton(text='Картой', callback_data='pay_card')
+    ]
+    keyboard.add(*keys)
+
+    bot.send_message(
+        chat_id=message.chat.id,
+        #message_id=message.id, 
+        text='Выберите способ оплаты',
+        reply_markup=keyboard
+    )
+
     
-
-
 bot.polling(none_stop=True)
