@@ -1,17 +1,12 @@
-import numpy as np
-import json
 import telebot
 from telebot import types
 from collections import defaultdict
-
 from pizza import *
 from utils import *
 
 import warnings
 warnings.filterwarnings("ignore")
 
-order_id = '-918073133'
-API_TOKEN = '6094466827:AAFDEgnPoqCJiCTheNJgraAWLdzaJWyxI3Y'
 bot = telebot.TeleBot(API_TOKEN)
 
 commands = [
@@ -26,11 +21,12 @@ mobile = {}
 adress = {}
 payment = {}
 
+
 @bot.message_handler(commands=['start'])
 def start_msg(message):
     bot.send_message(
         message.chat.id, 
-        text='Добро пожаловть в НАЗВАНИЕ_РЕСТОРАНА')
+        text='Добро пожаловть в ресторан "Август 13"')
     
 
 @bot.message_handler(func=lambda msg: msg.text is not None and msg.text[0] != '/')
@@ -38,7 +34,7 @@ def text_msg(message):
     print(message.chat.id)
     bot.send_message(
         message.chat.id, 
-        text=f'Текст не поддерживается, пользуйтесь кнопками.'
+        text='Текст не поддерживается, пользуйтесь кнопками.'
         )
 
 
@@ -49,7 +45,7 @@ def menu(message):
     keys = [
         types.InlineKeyboardButton(text='Пицца', callback_data='pizza')
     ]
-    
+
     keyboard.add(*keys)
     bot.send_message(
         message.chat.id, 
@@ -98,11 +94,11 @@ def callback_worker(call):
     elif call.data == 'pizza':
         keyboard = types.InlineKeyboardMarkup()
         keys = [
-            types.InlineKeyboardButton(text='Пицца Дьяволо', callback_data='piz_diablo'),
-            types.InlineKeyboardButton(text='Пицца пепперони', callback_data='piz_pepperoni'),
-            types.InlineKeyboardButton(text='Пицца с креветками', callback_data='piz_shrimp'),
-            types.InlineKeyboardButton(text='Пицца со слабосоленым лососем, каперсами и сыром филадельфия', callback_data='piz_fila'),
-            types.InlineKeyboardButton(text='Пицца мясная BBQ', callback_data='piz_bbq')
+            types.InlineKeyboardButton(text='Дьяволо', callback_data='piz_diablo'),
+            types.InlineKeyboardButton(text='Пепперони', callback_data='piz_pepperoni'),
+            types.InlineKeyboardButton(text='С креветками', callback_data='piz_shrimp'),
+            types.InlineKeyboardButton(text='Лосось, каперсы, филадельфия', callback_data='piz_fila'),
+            types.InlineKeyboardButton(text='BBQ', callback_data='piz_bbq')
         ]
         keyboard.add(*keys)
 
@@ -206,4 +202,8 @@ def tele(message):
     )
 
     
-bot.polling(none_stop=True)
+while True:
+    try:
+        bot.polling(none_stop=True)
+    except:
+        pass
